@@ -13,7 +13,9 @@ import ujaen.git.ppt.smtp.SMTPMessage;
 public class Connection implements Runnable, RFC5322 {
 
 	public static final int S_HELO = 0;
-
+	public static final int S_MAIL = 1;
+	public static final int S_RCPT = 2;
+	public static final int S_DATA = 3;
 	protected Socket mSocket;
 	protected int mEstado = S_HELO;;
 	private boolean mFin = false;
@@ -54,17 +56,37 @@ public class Connection implements Runnable, RFC5322 {
 					SMTPMessage m = new SMTPMessage(inputData);
 
 					// TODO: Máquina de estados del protocolo
-					switch (mEstado) {
-					case S_HELO:
-						
-						break;
-					default:
-						break;
+					if (m.hasError()==false){
+						switch (mEstado) {
+						case S_HELO:
+							if (m.getCommand().equalsIgnoreCase("helo")){
+								outputData = RFC5321.getReply(RFC5321.R_250) + SP + RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
+							}
+							break;
+						case S_MAIL:
+							if (m.getCommand().equalsIgnoreCase("Mail From")){
+								outputData = RFC5321.getReply(RFC5321.R_250) + SP + RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
+							}
+							break;
+						case S_RCPT:
+							if (m.getCommand().equalsIgnoreCase("RCPT TO")){
+								outputData = RFC5321.getReply(RFC5321.R_250) + SP + RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
+							}
+							break;
+						case S_DATA:
+							if (m.getCommand().equalsIgnoreCase("DATA")){
+								outputData = RFC5321.getReply(RFC5321.R_354) + SP + RFC5321.getReplyMsg(RFC5321.R_354) + CRLF;
+							}
+						default:
+							break;
+						}
 					}
-
+					else{
+						outputData = RFC5321.getError((RFC5321.E_500_SINTAXERROR)) + SP + RFC5321.getErrorMsg(RFC5321.E_500_SINTAXERROR) + CRLF;
+						
+					}
 					// TODO montar la respuesta
 					// El servidor responde con lo recibido
-					outputData = RFC5321.getReply(RFC5321.R_220) + SP + inputData + CRLF;
 					output.write(outputData.getBytes());
 					output.flush();
 

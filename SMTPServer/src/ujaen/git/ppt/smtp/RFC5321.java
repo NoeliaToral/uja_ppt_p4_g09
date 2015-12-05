@@ -45,7 +45,7 @@ public class RFC5321 {
 	
 	public static String getCommand(int i)
 	{
-		if(i<SMTP_COMMANDS.length)
+		if(i>=0 && i<SMTP_COMMANDS.length)
 			return SMTP_COMMANDS[i];
 		else
 		return null; 

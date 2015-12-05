@@ -6,7 +6,7 @@ import java.net.*;
 
 public class Server {
 
-	public static final int TCP_SERVICE_PORT = 6000;
+	public static final int TCP_SERVICE_PORT = 25;
 
 	static ServerSocket server = null;
 

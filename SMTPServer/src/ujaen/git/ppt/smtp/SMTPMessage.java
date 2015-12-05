@@ -34,13 +34,25 @@ public class SMTPMessage implements RFC5322 {
 	 */
 	protected boolean parseCommand(String data) {
 
-		if (data.indexOf(":") > 0) {
-			String[] commandParts = data.split(":");// Se busca los comandos con
-													// varias palabras MAIL
-													// FROM:
+		if (data.indexOf(":") == 1) {
+			String[] commandParts = data.split(":");
+			if (checkCommand(commandParts[0]) != -1);{
+				return false;
+			}
 		}
-
-		return false;
+		else if (data.indexOf(" ") > 0){
+			String[] commandParts = data.split(" ");
+			if (checkCommand(commandParts[0]) != -1){
+				return false;
+			}	
+		}
+		else{
+			if (checkCommand(data) != -1){
+				return false;
+			}
+		}
+		return true;
+		
 	}
 
 	public String toString() {
@@ -72,21 +84,17 @@ public class SMTPMessage implements RFC5322 {
 	protected int checkCommand(String data) {
 		int index = 0;
 
-		this.mCommandId = RFC5321.C_NOCOMMAND;
+		this.mCommandId = RFC5321.C_NOCOMMAND; //inicializa a comando de no id -1
 
 		for (String c : RFC5321.SMTP_COMMANDS) {
-			if (data.compareToIgnoreCase(c) == 0)
-				this.mCommandId = index;
-
+			if (data.compareToIgnoreCase(c) == 0) // comparamos el comando con todos los comandos aumentado el index a 1 cada vez
+				this.mCommandId = index;			// el numero de la vuelta que sea sera el id del comando
+			
 			index++;
 
 		}
 
-		if (mCommandId != RFC5321.C_NOCOMMAND)
-			mCommand = RFC5321.getCommand(mCommandId);
-		else
-			mCommand = null;
-
+		mCommand = RFC5321.getCommand(mCommandId);
 		return this.mCommandId;
 	}
 
