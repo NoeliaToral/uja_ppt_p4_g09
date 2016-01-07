@@ -1,5 +1,6 @@
 package ujaen.git.ppt.smtp;
 
+import ujaen.git.ppt.mail.Mailbox;
 
 public class SMTPMessage implements RFC5322 {
 
@@ -17,12 +18,10 @@ public class SMTPMessage implements RFC5322 {
 	 */
 	public SMTPMessage(String data) {
 
-		if(data.length()>998)
-		{
-			mHasError=true;
-			
-		}
-		else
+		if (data.length() > 998) {
+			mHasError = true;
+
+		} else
 			mHasError = parseCommand(data);
 
 	}
@@ -34,25 +33,31 @@ public class SMTPMessage implements RFC5322 {
 	 */
 	protected boolean parseCommand(String data) {
 
-		if (data.indexOf(":") == 1) {
+		if (data.indexOf(":") > 0) {
 			String[] commandParts = data.split(":");
-			if (checkCommand(commandParts[0]) != -1);{
+			checkCommand(commandParts[0]);
+			checkArguments(commandParts[1]);
+			if (mCommandId != -1 && checkArguments(commandParts[1]) == true) {
 				return false;
 			}
-		}
-		else if (data.indexOf(" ") > 0){
+
+		} else if (data.indexOf(" ") > 0) {
 			String[] commandParts = data.split(" ");
-			if (checkCommand(commandParts[0]) != -1){
-				return false;
-			}	
-		}
-		else{
-			if (checkCommand(data) != -1){
+			checkCommand(commandParts[0]);
+
+			if (mCommandId != -1 && checkArguments(commandParts[1]) == true) {
 				return false;
 			}
+
+		} else {
+			if (checkCommand(data) != -1) {
+				return false;
+			}
+		}
+		if (mErrorCode == 0) {
+			mErrorCode = RFC5321.E_500_SINTAXERROR;
 		}
 		return true;
-		
 	}
 
 	public String toString() {
@@ -69,8 +74,8 @@ public class SMTPMessage implements RFC5322 {
 					result = result + SP + s;
 
 			result = result + CRLF;
-			//opcional
-			result=result+"id="+this.mCommandId;
+			// opcional
+			result = result + "id=" + this.mCommandId;
 			return result;
 		} else
 			return "Error";
@@ -81,15 +86,40 @@ public class SMTPMessage implements RFC5322 {
 	 * @param data
 	 * @return The id of the SMTP command
 	 */
+	protected boolean checkArguments(String data) {
+		mArguments = data;
+		if (mCommand == null) {
+			return false;
+		} else if (mCommand.equalsIgnoreCase("HELO") || mCommand.equalsIgnoreCase("EHLO")) {
+			return true;
+		} else if (mCommand.equalsIgnoreCase("MAIL FROM")) {
+			return mArguments.contains("@");
+		} else if (mCommand.equals("RCPT TO")) {
+			if (Mailbox.checkRecipient(mArguments) == true) {
+				return true;
+			} else {
+				mErrorCode = RFC5321.E_551_USERNOTLOCAL;
+				return false;
+			}
+		}
+		return false;
+
+	}
+
 	protected int checkCommand(String data) {
 		int index = 0;
 
-		this.mCommandId = RFC5321.C_NOCOMMAND; //inicializa a comando de no id -1
+		this.mCommandId = RFC5321.C_NOCOMMAND; // inicializa a comando de no id
+												// -1
 
 		for (String c : RFC5321.SMTP_COMMANDS) {
-			if (data.compareToIgnoreCase(c) == 0) // comparamos el comando con todos los comandos aumentado el index a 1 cada vez
-				this.mCommandId = index;			// el numero de la vuelta que sea sera el id del comando
-			
+			if (data.compareToIgnoreCase(c) == 0) { // comparamos el comando con
+													// todos los comandos
+													// aumentado el index a 1
+													// cada vez
+				this.mCommandId = index; // el numero de la vuelta que sea sera
+											// el id del comando
+			}
 			index++;
 
 		}
@@ -134,7 +164,6 @@ public class SMTPMessage implements RFC5322 {
 		return mHasError;
 	}
 
-	
 	public int getErrorCode() {
 		return mErrorCode;
 	}

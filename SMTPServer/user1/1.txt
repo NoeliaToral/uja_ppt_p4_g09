@@ -1,10 +1,7 @@
-subject: hola
-to: user1
-from: user2
+subject : asunto
+Destination Date Field: 0:12 8/0/2016
+Message-ID:6979
 
-Correo de prueba
-Este es un correo
-de prueba
-prueba
-más pruebas
-
+hola como estass
+yo bien 
+.

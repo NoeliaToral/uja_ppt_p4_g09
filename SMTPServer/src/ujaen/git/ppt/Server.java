@@ -1,6 +1,5 @@
 package ujaen.git.ppt;
 
-
 import java.io.IOException;
 import java.net.*;
 
@@ -11,7 +10,7 @@ public class Server {
 	static ServerSocket server = null;
 
 	public static void main(String[] args) {
-			
+
 		System.out.println("Servidor> Iniciando servidor");
 		try {
 			server = new ServerSocket(TCP_SERVICE_PORT);
@@ -23,7 +22,7 @@ public class Server {
 				new Thread(new Connection(newsocket)).start();
 			}
 		} catch (IOException e) {
-			System.err.println("Server "+e.getMessage());
+			System.err.println("Server " + e.getMessage());
 			e.printStackTrace();
 		}
 
